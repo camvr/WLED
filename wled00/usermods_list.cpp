@@ -207,6 +207,11 @@
 #include "../usermods/usermod_v2_auto_playlist/usermod_v2_auto_playlist.h"
 #endif
 
+//Guitar LED Controler
+#ifdef USERMOD_GUITAR_LED
+#include "../usermods/guitar_led_controller/guitar_led_controller.h"
+#endif
+
 void registerUsermods()
 {
   /*
@@ -410,4 +415,7 @@ void registerUsermods()
 #endif
 
 
+#ifdef USERMOD_GUITAR_LED
+  usermods.add(new GuitarLedController());
+#endif
 }
