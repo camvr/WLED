@@ -8360,6 +8360,47 @@ static const char _data_FX_MODE_2DWAVINGCELL[] PROGMEM = "Waving Cell@!,,Amplitu
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
+// GUITAR LED CUSTOM EFFECTS
+//////////////////////////////////////////////////////////////////////////////////////////
+
+uint16_t mode_guitarSolidSR(void)
+{
+  um_data_t *um_data;
+  if (!usermods.getUMData(&um_data, USERMOD_ID_AUDIOREACTIVE)) {
+    // add support for no audio
+    um_data = simulateSound(SEGMENT.soundSim);
+  }
+  float   volumeSmth   = *(float*)  um_data->u_data[0];
+  int16_t volumeRaw    = *(int16_t*)um_data->u_data[1];
+  if (SEGENV.call == 0) SEGENV.setUpLeds();   // WLEDMM use lossless getPixelColor()
+
+  //uint8_t fadeRate = map(SEGMENT.speed,0,255,224,255);
+  uint8_t fadeRate = map(SEGMENT.speed,0,255,200,254);
+  SEGMENT.fade_out(fadeRate);
+
+  float tmpSound2 = volumeRaw * 2.0 * (float)SEGMENT.intensity / 255.0;
+  // TODO map volume to brightness - the louder the sound, the brighter
+  int lum = mapf(tmpSound2, 0, 255, 0, 0xFF); // map to pixels availeable in current segment              // Still a bit too sensitive.
+  if (lum < 0)    lum = 0;
+  if (lum > 0xFF) lum = 0xFF;
+
+  SEGMENT.fill(color_blend(SEGCOLOR(1), SEGCOLOR(0), lum)); // TODO grab the set colour instead of WHITE hardcoded?
+
+  /*for (int i=0; i<maxLen; i++) {                                    // The louder the sound, the wider the soundbar. By Andrew Tuline.
+    uint8_t index = inoise8(i*volumeSmth+SEGENV.aux0, SEGENV.aux1+i*volumeSmth);  // Get a value from the noise function. I'm using both x and y axis.
+    SEGMENT.setPixelColor(i, SEGMENT.color_from_palette(index, false, PALETTE_SOLID_WRAP, 0));
+  }
+
+  SEGENV.aux0+=beatsin8(5,0,10);
+  SEGENV.aux1+=beatsin8(4,0,10);*/
+
+  return FRAMETIME;
+//static const char _data_FX_MODE_NOISEMETER[] PROGMEM = "Noisemeter@Fade rate,Width;!,!;!;1v;;sx=248,ix=128,m12=2,si=0"; // Arc, Beatsin
+} // mode guitar Solid SR
+static const char _data_FX_MODE_GUITAR_SOLID_SR[] PROGMEM = "Guitar Solid SR@!Fade rate,";
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
 // mode data
 static const char _data_RESERVED[] PROGMEM = "RSVD";
 
@@ -8603,4 +8644,6 @@ void WS2812FX::setupEffectData() {
   addEffect(FX_MODE_2DAKEMI, &mode_2DAkemi, _data_FX_MODE_2DAKEMI); // audio
 #endif // WLED_DISABLE_2D
 
+  // Custom Guitar LED Effects
+  addEffect(FX_MODE_GTRSOLIDSR, &mode_guitarSolidSR, _data_FX_MODE_GUITAR_SOLID_SR);
 }

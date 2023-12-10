@@ -23,11 +23,11 @@
 #endif
 
 #ifndef ENCODER_CLK_PIN
-#define ENCODER_CLK_PIN 5
+#define ENCODER_CLK_PIN 19
 #endif
 
 #ifndef ENCODER_SW_PIN
-#define ENCODER_SW_PIN 19
+#define ENCODER_SW_PIN 5
 #endif
 
 // Number of modes at the start of the list to not sort
@@ -95,10 +95,8 @@ class GuitarLedController : public Usermod {
 private:
   unsigned long loopTime = 0;
 
-  unsigned long buttonPressedTime = 0;
-  unsigned long buttonWaitTime = 0;
-  bool buttonPressedBefore = false;
-  bool buttonLongPressed = false;
+  unsigned char buttonState = HIGH;
+  unsigned char prevButtonState = HIGH;
 
   int8_t pinA = ENCODER_DT_PIN;       // DT from encoder
   int8_t pinB = ENCODER_CLK_PIN;      // CLK from encoder
@@ -436,33 +434,19 @@ void GuitarLedController::loop()
   {
     loopTime = currentTime; // Updates loopTime
 
-    bool buttonPressed = false;
-    if (pinC >= 0) buttonPressed = !digitalRead(pinC); //0=pressed, 1=released
-    if (buttonPressed) {
-      if (!buttonPressedBefore) buttonPressedTime = currentTime;
-      buttonPressedBefore = true;
-      if (currentTime-buttonPressedTime > 3000) {
-        buttonLongPressed = true;
+    buttonState = digitalRead(pinC);
+    if (prevButtonState != buttonState)
+    {
+      if (buttonState == LOW)
+      {
+        prevButtonState = buttonState;
+        // Change to the selected preset
+        changePreset(moveForward);
       }
-    } else if (!buttonPressed && buttonPressedBefore) {
-      bool doublePress = buttonWaitTime;
-      buttonWaitTime = 0;
-      if (!buttonLongPressed) {
-        if (doublePress) {
-          //toggleOnOff();
-          //lampUpdated();
-        } else {
-          buttonWaitTime = currentTime;
-        }
+      else
+      {
+        prevButtonState = buttonState;
       }
-      buttonLongPressed = false;
-      buttonPressedBefore = false;
-    }
-    if (buttonWaitTime && currentTime-buttonWaitTime>350 && !buttonPressedBefore) { //same speed as in button.cpp
-      buttonWaitTime = 0;
-
-      // Change to the selected preset
-      changePreset(moveForward);
     }
 
     Enc_A = digitalRead(pinA); // Read encoder pins
