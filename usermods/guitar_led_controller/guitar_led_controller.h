@@ -19,15 +19,15 @@
 #endif
 
 #ifndef ENCODER_DT_PIN
-#define ENCODER_DT_PIN 18
+#define ENCODER_DT_PIN 26
 #endif
 
 #ifndef ENCODER_CLK_PIN
-#define ENCODER_CLK_PIN 19
+#define ENCODER_CLK_PIN 25
 #endif
 
 #ifndef ENCODER_SW_PIN
-#define ENCODER_SW_PIN 5
+#define ENCODER_SW_PIN 27
 #endif
 
 // Number of modes at the start of the list to not sort
